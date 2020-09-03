@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 from datetime import datetime
 import logging
+import time
 
 
 class Deribit_MD:
@@ -46,10 +47,10 @@ class Deribit_MD:
                 time = datetime.strptime(split_list[1], '%d%b%y').strftime('%Y%m%d')
                 return "FUTU-{}-{}".format(symbol, time)
 
-    def __get_instrument_name(self):
+    def get_instrument_name(self):
         data = self.session.get("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC")
         data = data.json()
-        self.instruments = [d['instrument_name'] for d in data['result']]
+        return [d['instrument_name'] for d in data['result']]
 
     def __get_kline_by_instrument(self, instrument_name: str, start_datetime: datetime.timestamp, end_datetime: datetime.timestamp, freq: int):
         data = self.session.get("https://www.deribit.com/api/v2/public/get_tradingview_chart_data?instrument_name={}&resolution={}&start_timestamp={}&end_timestamp={}".format(instrument_name, self.__freq_map[str(freq)], int(start_datetime)* 1000, int(end_datetime) * 1000)).json()['result']
@@ -66,14 +67,15 @@ class Deribit_MD:
             return None
     
     def get_klines(self, freq: int):
-        self.__get_instrument_name()
-        for instrument in self.instruments:
+        instruments = self.get_instrument_name()
+        for instrument in instruments:
             kline_frame = self.__get_kline_by_instrument(instrument_name=instrument, start_datetime=self.start_datetime, end_datetime=self.end_datetime, freq=60)
             if kline_frame is None:
                 self.logger.error("{} kline frame @ {} returned no data".format(instrument, str(datetime.fromtimestamp(self.start_datetime - 8 * 3600))))
             else:
                 kline_frame.to_csv('deribit_kline_frame/{}.csv'.format(instrument + str(int(self.start_datetime))))
                 self.logger.info("Succesfully fetched {} kline frame @ {}".format(instrument, str(datetime.fromtimestamp(self.start_datetime - 8 * 3600))))
+            time.sleep(0.5)
 
 
 if __name__ == "__main__":
