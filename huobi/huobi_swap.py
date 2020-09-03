@@ -2,6 +2,7 @@ import requests
 import logging
 import pandas as pd 
 from datetime import datetime
+import time
 
 class Huobi_SWAP_MD:
 
@@ -55,6 +56,7 @@ class Huobi_SWAP_MD:
             kline_frame = self.__get_kline_by_instrument(instrument_name=instrument, start_datetime=self.start_datetime, end_datetime = self.end_datetime, freq=freq)
             if kline_frame is not None:
                 kline_frame.to_csv("example.csv")
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":
