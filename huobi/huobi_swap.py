@@ -40,7 +40,7 @@ class Huobi_SWAP_MD:
         data = pd.DataFrame(data)
         if len(data.index) > 0:
             data = data.rename(columns={"id": 'start_datetime'})
-            data['start_datetime'] = data['start_datetime'].apply(lambda x: datetime.fromtimestamp(x))
+            #data['start_datetime'] = data['start_datetime'].apply(lambda x: datetime.fromtimestamp(x))
             data['global_symbol'] = 'SWAP-{}'.format(instrument_name.replace('-', '/'))
             data['freq_seconds'] = freq
             self.logger.info("Successfully fetched {} kline @ {}".format(instrument_name, str(datetime.fromtimestamp(self.start_datetime))))
