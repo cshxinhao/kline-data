@@ -39,15 +39,23 @@ class Binance_SWAP_MD:
             instrument_name, self.__freq_mapping[str(freq)], 10*int(self.start_datetime), 10*int(self.end_datetime)
         )).json()
         data = pd.DataFrame(data, columns = ['Open time', 'open', 'high', 'low', "close", 'volume', 'close time', 'amount', 'trades', 'taker base', 'taker quote', 'ignore'])
-        data['start_datetime'] = data['Open time'].apply(lambda x: x//1000)
-        data = data[['open', 'high', 'low', 'close', 'volume', 'amount', 'start_datetime']]
-        data['freq_seconds'] = freq
-        data['global_symbol'] = 'SWAP-{}/USDT'.format(instrument_name.split('USDT')[0])
-        return data
+        if len(data.index) > 0:
+            data['start_datetime'] = data['Open time'].apply(lambda x: x//1000)
+            data = data[['open', 'high', 'low', 'close', 'volume', 'amount', 'start_datetime']]
+            data['freq_seconds'] = freq
+            data['global_symbol'] = 'SWAP-{}/USDT'.format(instrument_name.split('USDT')[0])
+            self.logger.info("Succesfully fetched {} kline @ {}".format(instrument_name, str(datetime.fromtimestamp(self.start_datetime))))
+            return data
+        else:
+            self.logger.error("Failed to fetched {} kline @ {}".format(instrument_name, str(datetime.fromtimestamp(self.start_datetime))))
+            return None
 
     def get_klines(self, freq):
-        data = self.__get_kline_by_instrument(instrument_name='BTCUSDT', start_datetime=self.start_datetime, end_datetime=self.end_datetime, freq=freq)
-        print(data)
+        instruments = self.get_instruments()
+        for instrument in instruments:
+            data = self.__get_kline_by_instrument(instrument_name=instrument, start_datetime=self.start_datetime, end_datetime=self.end_datetime, freq=freq)
+            if data is not None:
+                data.to_csv('test.csv')
 
 if __name__ == "__main__":
     binance_swap_md = Binance_SWAP_MD(start_time=datetime(2020,9,2), end_time=datetime(2020,9,3))
