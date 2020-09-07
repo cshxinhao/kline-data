@@ -34,9 +34,10 @@ class Huobi_SPOT_MD:
 
     def get_instruments(self):
         data = self.session.get(self.url + '/v1/common/symbols').json()
-        return [d['symbol'] for d in data['data']]
+        return [[d['symbol'], d['base-currency'], d['quote-currency']] for d in data['data']]
 
-    def __get_kline_by_instrument(self, instrument_name: str, start_datetime: int, end_datetime: int, freq):
+    def __get_kline_by_instrument(self, instrument_name: str, start_datetime: int, end_datetime: int, freq,
+                                  base_currency, quote_currency):
         try:
             data = self.session.get(
                 self.url + '/market/history/kline?symbol={}&period={}&size={}'.format(instrument_name,
@@ -48,7 +49,7 @@ class Huobi_SPOT_MD:
             if len(data.index) > 0:
                 data = data.rename(columns={"id": 'start_datetime'})
                 # data['start_datetime'] = data['start_datetime'].apply(lambda x: datetime.fromtimestamp(x))
-                data['global_symbol'] = 'SPOT-{}'.format(instrument_name.replace('-', '/'))
+                data['global_symbol'] = 'SPOT-{}/{}'.format(base_currency.upper(), quote_currency.upper())
                 data['freq_seconds'] = freq
                 self.logger.info("Successfully fetched {} kline @ {}".format(instrument_name, str(
                     datetime.fromtimestamp(self.start_datetime))))
@@ -67,13 +68,16 @@ class Huobi_SPOT_MD:
     def get_klines(self, freq: int):
         instruments = self.get_instruments()
         for instrument in instruments:
-            kline_frame = self.__get_kline_by_instrument(instrument_name=instrument, start_datetime=self.start_datetime,
-                                                         end_datetime=self.end_datetime, freq=freq)
+            kline_frame = self.__get_kline_by_instrument(instrument_name=instrument[0],
+                                                         start_datetime=self.start_datetime,
+                                                         end_datetime=self.end_datetime, freq=freq,
+                                                         base_currency=instrument[1],
+                                                         quote_currency=instrument[2])
             if kline_frame is not None:
-                kline_frame.to_csv("example.csv")
+                kline_frame.to_csv("example1.csv")
             time.sleep(0.1)
 
 
 if __name__ == "__main__":
-    huobi = Huobi_SPOT_MD(datetime(2020, 9, 2), datetime(2020, 9, 3), 200)
+    huobi = Huobi_SPOT_MD(datetime(2020, 9, 2), datetime(2020, 9, 3), 5)
     huobi.get_klines(freq=60)
