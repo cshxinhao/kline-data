@@ -1,8 +1,17 @@
 import requests
 import logging
 import pandas as pd 
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
+from sqlalchemy import create_engine
+
+creds = {'usr': 'ONEBIT',
+         'pwd': 'mafmmafm2020',
+         'hst': '127.0.0.1',
+         'prt': 3306,
+         'dbn': 'crypto_data'}
+
+conn = create_engine('mysql+pymysql://{usr}:{pwd}@{hst}:{prt}/{dbn}'.format(**creds))
 
 class Huobi_SWAP_MD:
 
@@ -55,10 +64,19 @@ class Huobi_SWAP_MD:
         for instrument in instruments:
             kline_frame = self.__get_kline_by_instrument(instrument_name=instrument, start_datetime=self.start_datetime, end_datetime = self.end_datetime, freq=freq)
             if kline_frame is not None:
-                kline_frame.to_csv("example.csv")
-            time.sleep(0.1)
+                kline_frame = kline_frame.rename(columns={'vol': 'volume'})
+                kline_frame = kline_frame[kline_frame['start_datetime'] < self.end_datetime]
+                kline_frame.to_sql(name='HUOBI_SWAP_OFFICIAL_KLINES', con=conn, if_exists='append', method='multi', index=False)
+            time.sleep(0.2)
 
 
 if __name__ == "__main__":
-    huobi = Huobi_SWAP_MD(datetime(2020, 9, 2), datetime(2020, 9, 3))
-    huobi.get_klines(freq=60)
+    huobi = Huobi_SWAP_MD(start_time=datetime.now(), end_time=datetime.now())
+    start = datetime(2020, 3, 25)
+    while start < datetime(2020, 9, 18):
+        print(start)
+        end = start + timedelta(days=1)
+        huobi.start_datetime = int(start.timestamp())
+        huobi.end_datetime = int(end.timestamp())
+        huobi.get_klines(freq=60)
+        start = end
