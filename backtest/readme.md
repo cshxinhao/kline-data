@@ -53,6 +53,6 @@ sqlalchemy
     engine.show_chart() 
  
  回测结果指标：
- ![Image text]https://github.com/jfengan/kline-data/blob/yan/backtest/csvresult.png
+ ![Image text](https://github.com/jfengan/kline-data/blob/yan/backtest/csvresult.png)
  
  回测结果可视化：  
