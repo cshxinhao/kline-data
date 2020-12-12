@@ -1,39 +1,39 @@
-回测框架说明
+Instruction of back-testing framework
 ===========================
-### 框架介绍
-该框架是一套基于Python的量化回测框架，致力于为策略提供回测指标以及可视化结果。
+### Overview
+The back-testing framework is built on Python, aiming at providing indicators and visualization results for quant strategies.
 
-### 环境依赖
+### Requirements for environment
 vnpy==2.0.6  
 pandas  
 sqlalchemy
 
-### 使用说明
-1. 加载策略  
+### Procedures:
+1. Inputing strategy
 
-   >add_strategy：把CTA策略逻辑，对应合约品种，以及参数设置（可在策略文件外修改）载入到回测引擎中  
-   策略示例：atr_rsi_strategy.py
+   >add_strategy：Input the strategy into back-testing engine, including strategy logic, corresponding contracts and parameter settings (could be modified out of strategy file).  
+   Eg：atr_rsi_strategy.py
 
-2. 载入历史数据  
+2. 2.	Loading historical data  
     >load_data_csv:
-    数据载入提供读取csv文件和直接读取数据库两种方式：  
-    读取csv文件：filename参数为本地csv路径，type参数为'csv'；  
-    直接读取数据库:filename参数为instrument(例如'SWAP-BTC/USDT')，type参数为'db'  
+    Load data either from csv file or database：  
+    Load data from csv：Parameter "filename" indicates location of csv file; Specify parameter "type" as 'csv'；  
+    Load data from database:Parameter "filename" indicates instrument (eg. ‘SWAP-BTC/USDT’); Specify parameter "type" as 'db'.  
                >
-    数据载入设置了进度条功能，可以在载入数据时了解进度  
-    载入数据是以迭代方式进行的，数据最终存入self.history_data。
+    The progress of loading data could be visualized during the process. 
+    Loading data is inplemented by iterations, the result would be saved in self.history_data.
 
-3. 计算策略盈亏情况
-    > calculate_result：基于收盘价、当日持仓量、合约规模、滑点、手续费率等计算总盈亏与净盈亏，并且其计算结果以DataFrame格式输出（存储到本地目录下的daily_profit.csv ），完成基于逐日盯市盈亏统计。
+3. Calculating PNL
+    > calculate_result：Calculate total and net PNL (profit and loss) based on closed price, holdings, contract scale, slippage and fees. Output the result in DataFrame (saved in daily_profit.csv).
 
-4. 计算策略统计指标
-    > calculate_statistics：基于逐日盯市盈亏情况（DateFrame格式）来计算衍生指标，如最大回撤、年化收益、盈亏比、夏普比率等
+4. Calculating statistical indicators
+    > calculate_statistics：Calculate Maximum Drawdown, Annual Profit, Profit Loss Ratio and Sharpe Ratio based on daily backtesting.
 
-5. 回测结果可视化
-    > show_chart：将回测结果进行可视化，直观展现总收益、最大回测等指标
+5. Visualization of result
+    > show_chart：Visualize the result of back-testing. Eg:Maximum Drawdown.
 
-### 项目使用效果
-    >  调用示例代码：
+### Sample
+    >  sample codes：
     engine = BacktestingEngine()
     engine.set_parameters(
     vt_symbol="SWAP.BINANCE",
@@ -52,9 +52,9 @@ sqlalchemy
     engine.calculate_statistics()
     engine.show_chart() 
  
- csv回测结果指标：   
+ csv-indicators：   
  ![image](https://github.com/jfengan/kline-data/blob/yan/backtest/csvresult.png)  
- database回测结果指标：  
+ database-indicators：  
  ![image](https://github.com/jfengan/kline-data/blob/yan/backtest/databaseresult.png)  
- csv回测结果可视化：  
+ csv-visualization of result：  
  ![image](https://github.com/jfengan/kline-data/blob/yan/backtest/csvpicture.png)
